@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: The stack for Snipper, code snippet manager
+
+# Parameters:
+#   ApiLogRetentionDays:
+#     Type: Number
+#     Description: The number of days to keep CloudWatch logs for the APIs
+#     Default: 14
+
+Resources:
+  CategoryTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: Slug
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Slug
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1 # TODO: make parms
+        WriteCapacityUnits: 1
+
+  SnippetTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1 # TODO: make parms
+        WriteCapacityUnits: 1
+      # GlobalSecondaryIndexes:
+      #   - IndexName: ImageType
+      #     KeySchema:
+      #       - AttributeName: Type
+      #         KeyType: HASH
+      #       - AttributeName: UploadedOn
+      #         KeyType: RANGE
+      #     Projection:
+      #       ProjectionType: ALL
+      #     ProvisionedThroughput:
+      #       ReadCapacityUnits: 1 # TODO: make parms
+      #       WriteCapacityUnits: 1
+
+Outputs:
+  CategoryTableName:
+    Description: The name of the category table
+    Value: !Ref CategoryTable
+  SnippetTableName:
+    Description: The name of the snippet table
+    Value: !Ref SnippetTable
