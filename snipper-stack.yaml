@@ -27,24 +27,26 @@ Resources:
       AttributeDefinitions:
         - AttributeName: Id
           AttributeType: S
+        - AttributeName: Category
+          AttributeType: S
       KeySchema:
         - AttributeName: Id
           KeyType: HASH
       ProvisionedThroughput:
         ReadCapacityUnits: 1 # TODO: make parms
         WriteCapacityUnits: 1
-      # GlobalSecondaryIndexes:
-      #   - IndexName: ImageType
-      #     KeySchema:
-      #       - AttributeName: Type
-      #         KeyType: HASH
-      #       - AttributeName: UploadedOn
-      #         KeyType: RANGE
-      #     Projection:
-      #       ProjectionType: ALL
-      #     ProvisionedThroughput:
-      #       ReadCapacityUnits: 1 # TODO: make parms
-      #       WriteCapacityUnits: 1
+      GlobalSecondaryIndexes:
+        - IndexName: SnippetCategory
+          KeySchema:
+            - AttributeName: Category
+              KeyType: HASH
+            # - AttributeName: CreatedOn
+            #   KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1 # TODO: make parms
+            WriteCapacityUnits: 1
 
 Outputs:
   CategoryTableName:

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -26,6 +27,8 @@ namespace Snipper.Web.Controllers
         public async Task<ActionResult<List<Snippet>>> GetCategories()
         {
             var categories = await _categoryService.QueryAsync();
+
+            categories = categories.OrderBy(x => x.Name);
 
             return Ok(categories);
         }

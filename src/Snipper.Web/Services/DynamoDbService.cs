@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.DocumentModel;
 
 namespace Snipper.Web.Services
 {
@@ -51,14 +52,16 @@ namespace Snipper.Web.Services
             => _ddbContext.LoadAsync<TModel>(id);
 
 
-        public async Task<IEnumerable<TModel>> QueryAsync(string indexName = null)
+        public async Task<IEnumerable<TModel>> QueryAsync(
+            List<ScanCondition> conditions = null, string indexName = null)
         {
-            var thing = _ddbContext.ScanAsync<TModel>(null, new DynamoDBOperationConfig
-            {
-                IndexName = indexName
-            });
+            var query = _ddbContext.ScanAsync<TModel>(conditions,
+                new DynamoDBOperationConfig
+                {
+                    IndexName = indexName
+                });
 
-            var result = await thing.GetNextSetAsync();
+            var result = await query.GetNextSetAsync();
             return result;
 
             // var test = await _ddbClient.QueryAsync(queryRequest);

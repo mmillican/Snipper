@@ -31,6 +31,14 @@ namespace Snipper.Web.Controllers
             return Ok(snippets);
         }
 
+        [HttpGet("/api/categories/{slug}/snippets")]
+        public async Task<ActionResult<Snippet>> GetByCategory(string slug)
+        {
+            var snippets = await _snippetService.GetByCategory(slug);
+
+            return Ok(snippets);
+        }
+
         [HttpGet("{id:guid}")]
         public async Task<ActionResult<Snippet>> GetById(string id)
         {
