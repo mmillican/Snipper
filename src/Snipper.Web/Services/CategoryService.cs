@@ -1,14 +1,16 @@
 using System;
+using Microsoft.Extensions.Options;
+using Snipper.Web.Configuration;
 using Snipper.Web.Models;
 
 namespace Snipper.Web.Services
 {
     public class CategoryService : DynamoDbService<Category>
     {
-        public CategoryService()
+        public CategoryService(IOptions<DynamoConfig> dynamoOptions)
         {
-            var tableName = Environment.GetEnvironmentVariable("CategoryTable");
-            Init(tableName);
+            var config = dynamoOptions.Value;
+            Init(config.CategoryTableName);
         }
     }
 }

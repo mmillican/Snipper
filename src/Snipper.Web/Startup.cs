@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Snipper.Web.Services;
+using Snipper.Web.Configuration;
 
 namespace Snipper.Web
 {
@@ -43,6 +44,8 @@ namespace Snipper.Web
                 // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 // options.IncludeXmlComments(xmlPath);
             });
+
+            services.Configure<DynamoConfig>(Configuration.GetSection("DynamoDb"));
 
             services.AddTransient<CategoryService>();
             services.AddTransient<SnippetService>();
