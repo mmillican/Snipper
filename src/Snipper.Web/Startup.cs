@@ -29,6 +29,18 @@ namespace Snipper.Web
         {
             services.AddControllersWithViews();
 
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(policy =>
+                {
+                    policy.AllowAnyHeader();
+                    policy.AllowAnyMethod();
+                    policy.WithOrigins(
+                        "http://localhost:8080"
+                    );
+                });
+            });
+
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -67,6 +79,8 @@ namespace Snipper.Web
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
+
+            app.UseCors();
 
             app.UseSwagger();
             app.UseSwaggerUI(config =>
