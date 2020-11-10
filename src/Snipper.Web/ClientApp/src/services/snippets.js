@@ -7,9 +7,9 @@ export default {
 
   create(snippet) {
     return ApiService.post('snippets', snippet);
-  }
+  },
 
-  // update(category) {
-  //   return ApiService.put(`categories/${category.slug}`, category);
-  // }
+  update(snippet) {
+    return ApiService.put(`snippets/${snippet.id}`, snippet);
+  }
 }

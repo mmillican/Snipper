@@ -7,7 +7,7 @@
     <ul class="nav flex-column my-2" v-if="!isLoading">
       <li class="nav-item text-uppercase d-flex justify-content-between">
         <h6 class="align-bottom">{{ selectedCategory.name }}</h6>
-        <b-button size="sm" variant="outline-success" @click="showEdit">
+        <b-button size="sm" variant="outline-success" @click="addNew">
           Add
         </b-button>
       </li>
@@ -17,14 +17,13 @@
         v-for="snippet in snippets"
         :key="snippet.id"
       >
-        <router-link
+        <a
           class="nav-link"
-          :to="{name: 'viewSnippet', params: {
-            categorySlug: selectedCategory.slug,
-            id: snippet.id
-           } }">
+          href="#"
+          @click.prevent="viewSnippet(snippet)"
+        >
           {{ snippet.name }}
-        </router-link>
+        </a>
       </li>
 
     </ul>
@@ -52,8 +51,6 @@ export default {
   },
   watch: {
     selectedCategory(val) {
-      console.log('snippet category changed', val);
-
       this.getSnippets();
     }
   },
@@ -62,14 +59,25 @@ export default {
   },
   methods: {
     ...mapActions('snippets', [
-      'getByCategory'
+      'getByCategory',
+      'select',
+      'addNew'
     ]),
 
     getSnippets() {
       if (this.selectedCategory && this.selectedCategory.slug) {
-        console.log('get snippets for category', this.selectedCategory);
         this.getByCategory(this.selectedCategory.slug);
       }
+    },
+
+    viewSnippet(snippet) {
+      this.select(snippet);
+
+      // this.$router.push({
+      //     name: 'viewSnippet',
+      //     params: { categorySlug: this.selectedCategory.slug, id: snippet.id }
+      //   }
+      // );
     }
   }
 }

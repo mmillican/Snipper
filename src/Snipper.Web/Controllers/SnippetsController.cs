@@ -52,15 +52,21 @@ namespace Snipper.Web.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<Snippet>> Create(Snippet model)
+        public async Task<ActionResult<Snippet>> Create(CreateSnippetModel model)
         {
-            model.Id = Guid.NewGuid().ToString();
-            model.CreatedOn = DateTime.UtcNow;
-            model.UpdatedOn = DateTime.UtcNow;
+            var snippet = new Snippet
+            {
+                Id = Guid.NewGuid().ToString(),
+                Category = model.Category,
+                Name = model.Name,
+                Description = model.Description,
+                CreatedOn = DateTime.UtcNow,
+                UpdatedOn = DateTime.UtcNow
+            };
 
-            await _snippetService.SaveAsync(model);
+            await _snippetService.SaveAsync(snippet);
 
-            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
+            return CreatedAtAction(nameof(GetById), new { id = snippet.Id }, snippet);
         }
 
         [HttpPut("{id:guid}")]
@@ -79,5 +85,12 @@ namespace Snipper.Web.Controllers
 
             return NoContent();
         }
+    }
+
+    public class CreateSnippetModel
+    {
+        public string Category { get; set; }
+        public string Name { get; set; }
+        public string Description { get; set; }
     }
 }
