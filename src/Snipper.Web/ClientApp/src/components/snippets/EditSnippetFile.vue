@@ -11,6 +11,7 @@
           id="file-name"
           v-model="file.fileName"
           placeholder="filename.txt"
+          @change="fileNameChanged"
         />
       </b-form-group>
 
@@ -57,11 +58,6 @@ export default {
       editingFile: { ...this.file }
     }
   },
-  // watch: {
-  //   editingFile(val) {
-  //     this.file = { ...this.editingFile };
-  //   }
-  // },
   computed: {
     fileTypeOptions() {
       const types = [
@@ -69,6 +65,19 @@ export default {
         ...fileTypes
       ]
       return types;
+    }
+  },
+  methods: {
+    fileNameChanged(val) {
+      if (!val) {
+        return;
+      }
+
+      const extensionRegex = /(?:\.([^.]+))?$/
+      const extension = extensionRegex.exec(val)[1];
+
+      const fileType = fileTypes.find(x => x.ext === extension);
+      this.file.language = fileType ? fileType.alias : null;
     }
   }
 }
