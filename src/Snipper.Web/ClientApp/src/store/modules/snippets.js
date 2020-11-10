@@ -25,7 +25,9 @@ const state = {
 };
 
 const getters = {
-  getField
+  getField,
+  fileCount: state =>
+    state.selected ? state.selected.files.length : 0
 };
 
 const mutations = {
@@ -37,6 +39,10 @@ const mutations = {
 
   SET_IS_EDITING(state, value) {
     state.isEditing = value;
+  },
+
+  SET_SNIPPET_FILES(state, value) {
+    state.selected.values = value;
   },
 
   SET_SNIPPETS(state, value) {
@@ -95,6 +101,14 @@ const actions = {
       return SnippetService.update(state.selected).then(() => {
         dispatch('closeEdit');
       });
+    }
+  },
+
+  removeFile({ commit, state }, file) {
+    const index = state.selected.files.indexOf(file);
+    if (index > -1) {
+      const files = state.selected.files.splice(index, 1);
+      commit('SET_SNIPPET_FILES', files);
     }
   }
 };

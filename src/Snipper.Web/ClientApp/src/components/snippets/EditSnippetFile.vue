@@ -7,12 +7,26 @@
         :label-sr-only="true"
         class="my-0"
       >
-        <b-form-input
-          id="file-name"
-          v-model="file.fileName"
-          placeholder="filename.txt"
-          @change="fileNameChanged"
-        />
+        <b-input-group>
+          <b-form-input
+            id="file-name"
+            v-model="file.fileName"
+            placeholder="filename.txt"
+            @change="fileNameChanged"
+          />
+          <b-input-group-append>
+            <b-button
+              type="button"
+              variant="outline-danger"
+              @click="remove"
+              :disabled="!canRemove"
+              :title="removeTooltip"
+            >
+              <b-icon-trash
+              />
+            </b-button>
+          </b-input-group-append>
+        </b-input-group>
       </b-form-group>
 
       <div>
@@ -46,6 +60,8 @@
 
 <script>
 import { fileTypes } from '@/utils/file-types';
+import { mapActions, mapGetters } from 'vuex';
+import { BIconTrash } from 'bootstrap-vue';
 
 export default {
   props: {
@@ -53,12 +69,26 @@ export default {
       type: Object
     }
   },
+  components: {
+    BIconTrash
+  },
   data() {
     return {
       editingFile: { ...this.file }
     }
   },
   computed: {
+    ...mapGetters('snippets', [
+      'fileCount'
+    ]),
+    canRemove() {
+      return this.fileCount > 1;
+    },
+    removeTooltip() {
+      return this.canRemove
+        ? 'Remove this file'
+        : 'This is the only file in this snippet and cannot be removed.';
+    },
     fileTypeOptions() {
       const types = [
         { ext: null, name: 'Autodetect', alias: null },
@@ -68,6 +98,12 @@ export default {
     }
   },
   methods: {
+    ...mapActions('snippets', [
+      'removeFile'
+    ]),
+    remove() {
+      this.removeFile(this.file)
+    },
     fileNameChanged(val) {
       if (!val) {
         return;
