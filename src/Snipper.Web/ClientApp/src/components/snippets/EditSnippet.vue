@@ -38,6 +38,8 @@
           <b-form-textarea id="snippet-description" v-model="description" />
         </b-form-group>
 
+        <hr />
+
         <div class="actions my-2">
           <b-button
             type="button"
@@ -53,6 +55,13 @@
           :key="file.order"
           :file="file"
         />
+
+        <b-alert
+          variant="info"
+          :show="files.length < 1"
+        >
+          There are no files in this snippet.
+        </b-alert>
 
         <div class="actions my-2">
           <b-button

@@ -47,12 +47,12 @@
       </div>
     </div>
 
-    <div class="card-body">
+    <div class="card-body p-0">
       <b-form-textarea
         id="file-content"
         v-model="file.content"
-        rows="10"
-        class="text-monospace"
+        rows="7"
+        class="text-monospace border-0"
       />
     </div>
   </div>
