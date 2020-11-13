@@ -77,5 +77,8 @@ namespace Snipper.Web.Services
 
         public Task SaveAsync(TModel model)
             => _ddbContext.SaveAsync(model);
+
+        public Task DeleteAsync(TModel model)
+            => _ddbContext.DeleteAsync(model);
     }
 }

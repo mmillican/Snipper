@@ -8,9 +8,20 @@
           <div class="actions">
             <b-button
               variant="outline-secondary"
+              class="mr-1"
               size="sm"
               @click="edit"
-            >Edit</b-button>
+            >
+              Edit
+            </b-button>
+
+            <b-button
+              variant="outline-danger"
+              size="sm"
+              @click="remove"
+            >
+              Delete
+            </b-button>
           </div>
         </div>
 
@@ -61,7 +72,8 @@ export default {
   },
   methods: {
     ...mapActions('snippets', [
-      'edit'
+      'edit',
+      'remove'
     ])
   }
 }

@@ -85,6 +85,20 @@ namespace Snipper.Web.Controllers
 
             return NoContent();
         }
+
+        [HttpDelete("{id:guid}")]
+        public async Task<ActionResult> Delete(string id)
+        {
+            var snippet = await _snippetService.GetByIdAsync(id);
+            if (snippet == null)
+            {
+                return NotFound();
+            }
+
+            await _snippetService.DeleteAsync(snippet);
+
+            return NoContent();
+        }
     }
 
     public class CreateSnippetModel

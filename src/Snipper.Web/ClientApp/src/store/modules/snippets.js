@@ -110,6 +110,19 @@ const actions = {
       const files = state.selected.files.splice(index, 1);
       commit('SET_SNIPPET_FILES', files);
     }
+  },
+
+  remove({ dispatch, state }) {
+    if (!confirm('Are you sure you want to delete this snippet?')) {
+      return;
+    }
+
+    const currentCategory = state.selected.category;
+
+    return SnippetService.delete(state.selected).then(() => {
+      dispatch('getByCategory', currentCategory);
+      dispatch('select', getDefaultSelectedState());
+    });
   }
 };
 
