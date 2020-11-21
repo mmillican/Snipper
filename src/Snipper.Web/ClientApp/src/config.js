@@ -1,3 +1,3 @@
 export default {
-  apiUrl: 'https://localhost:5001/api' // TODO: add to end
+  apiUrl: process.env.VUE_APP_API_URL
 };
