@@ -1,9 +1,11 @@
 import { getField, updateField } from 'vuex-map-fields';
 import SnippetService from '@/services/snippets';
+import utils from '../../utils';
 
 const getDefaultSelectedState = () => {
   return {
-    id: null,
+    snippetId: utils.emptyGuid,
+    id: utils.emptyGuid,
     category: null,
     language: null,
     name: null,
@@ -92,7 +94,7 @@ const actions = {
   },
 
   save({ dispatch, state }) {
-    if (!state.selected.id) {
+    if (state.selected.snippetId === utils.emptyGuid) {
       return SnippetService.create(state.selected).then(() => {
         dispatch('getByCategory', state.selected.category);
         dispatch('closeEdit');

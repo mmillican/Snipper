@@ -9,7 +9,7 @@ using Snipper.Web.Models;
 
 namespace Snipper.Web.Services
 {
-    public class SnippetService : DynamoDbService<Snippet>
+    public class SnippetService : DynamoDbService<SnippetFileRecord>
     {
         public SnippetService(IOptions<DynamoConfig> dynamoOptions)
         {
@@ -17,7 +17,7 @@ namespace Snipper.Web.Services
             Init(config.SnippetTableName);
         }
 
-        public Task<IEnumerable<Snippet>> GetByCategory(string slug)
+        public Task<IEnumerable<SnippetFileRecord>> GetByCategory(string slug)
         {
             var conditions = new List<ScanCondition>
             {

@@ -21,17 +21,19 @@ Resources:
         ReadCapacityUnits: 1 # TODO: make parms
         WriteCapacityUnits: 1
 
-  SnippetTable:
+  SnippetFileTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
       AttributeDefinitions:
-        - AttributeName: Id
-          AttributeType: S
         - AttributeName: Category
           AttributeType: S
-      KeySchema:
         - AttributeName: Id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Category
           KeyType: HASH
+        - AttributeName: Id
+          KeyType: RANGE
       ProvisionedThroughput:
         ReadCapacityUnits: 1 # TODO: make parms
         WriteCapacityUnits: 1
@@ -40,8 +42,8 @@ Resources:
           KeySchema:
             - AttributeName: Category
               KeyType: HASH
-            # - AttributeName: CreatedOn
-            #   KeyType: RANGE
+            - AttributeName: Id
+              KeyType: RANGE
           Projection:
             ProjectionType: ALL
           ProvisionedThroughput:
@@ -52,6 +54,6 @@ Outputs:
   CategoryTableName:
     Description: The name of the category table
     Value: !Ref CategoryTable
-  SnippetTableName:
-    Description: The name of the snippet table
-    Value: !Ref SnippetTable
+  SnippetFileTableName:
+    Description: The name of the snippet file table
+    Value: !Ref SnippetFileTable

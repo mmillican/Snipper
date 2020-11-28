@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -34,7 +35,38 @@ namespace Snipper.Web.Controllers
         [HttpGet("/api/categories/{slug}/snippets")]
         public async Task<ActionResult<Snippet>> GetByCategory(string slug)
         {
-            var snippets = await _snippetService.GetByCategory(slug);
+            var snippetRecords = await _snippetService.GetByCategory(slug);
+
+            var snippetGroups = snippetRecords.GroupBy(x => x.SnippetId);
+
+            var snippets = new List<Snippet>();
+
+            foreach(var grp in snippetGroups)
+            {
+                var snippetGrpRecord = snippetRecords
+                    .FirstOrDefault(x => x.SnippetId == grp.Key);
+
+                var snip = new Snippet
+                {
+                    Id = snippetGrpRecord.SnippetId,
+                    Category = snippetGrpRecord.Category,
+                    Name = snippetGrpRecord.Name,
+                    Description = snippetGrpRecord.Description,
+                    CreatedOn = snippetGrpRecord.CreatedOn,
+                    UpdatedOn = snippetGrpRecord.UpdatedOn
+                };
+
+                snip.Files = grp.Select(x => new SnippetFile
+                {
+                    Id = x.Id,
+                    Order = x.Order,
+                    FileName = x.FileName,
+                    Language = x.Language,
+                    Content = x.Content
+                }).ToList();
+
+                snippets.Add(snip);
+            }
 
             return Ok(snippets);
         }
@@ -52,38 +84,45 @@ namespace Snipper.Web.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<Snippet>> Create(CreateSnippetModel model)
+        public async Task<ActionResult<Snippet>> Create(Snippet model)
         {
-            var snippet = new Snippet
-            {
-                Id = Guid.NewGuid().ToString(),
-                Category = model.Category,
-                Name = model.Name,
-                Description = model.Description,
-                CreatedOn = DateTime.UtcNow,
-                UpdatedOn = DateTime.UtcNow
-            };
+            model.Id = Guid.NewGuid();
+            await SaveSnippet(model);
 
-            await _snippetService.SaveAsync(snippet);
-
-            return CreatedAtAction(nameof(GetById), new { id = snippet.Id }, snippet);
+            return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult> Update(string id, Snippet model)
+        public async Task<ActionResult> Update(Guid id, Snippet model)
         {
-            var snippet = await _snippetService.GetByIdAsync(id);
-            if (snippet == null)
-            {
-                return NotFound();
-            }
-
-            model.Id = id; // Make sure the ID can't change
-            model.UpdatedOn = DateTime.UtcNow;
-
-            await _snippetService.SaveAsync(model);
+            model.Id = id;
+            await SaveSnippet(model);
 
             return NoContent();
+        }
+
+        private async Task SaveSnippet(Snippet model)
+        {
+            foreach (var file in model.Files)
+            {
+                var record = new SnippetFileRecord
+                {
+                    Category = model.Category,
+                    SnippetId = model.Id,
+                    Name = model.Name,
+                    Description = model.Description,
+                    CreatedOn = model.CreatedOn ?? DateTime.UtcNow,
+                    UpdatedOn = DateTime.UtcNow,
+
+                    Id = file.Id == Guid.Empty ? Guid.NewGuid() : file.Id,
+                    Order = file.Order,
+                    Language = file.Language,
+                    FileName = file.FileName,
+                    Content = file.Content
+                };
+
+                await _snippetService.SaveAsync(record);
+            }
         }
 
         [HttpDelete("{id:guid}")]
