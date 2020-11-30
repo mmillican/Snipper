@@ -17,12 +17,24 @@ const getDefaultSelectedState = () => {
   };
 };
 
+const getDefaultSearchState = () => {
+  return {
+    show: false,
+    query: null,
+
+    results: []
+  }
+};
+
 const state = {
   isLoading: false,
   isEditing: false,
   snippets: [],
   selected: {
     ...getDefaultSelectedState()
+  },
+  search: {
+    ...getDefaultSearchState()
   }
 };
 
@@ -58,6 +70,16 @@ const mutations = {
   RESET_EDITING(state) {
     state.isEditing = false;
     // state.selected = Object.assign(state.selected, getDefaultSelectedState());
+  },
+
+  SET_SHOW_SEARCH(state, value) {
+    state.search.show = value;
+  },
+  SET_SEARCH_QUERY(state, value) {
+    state.search.query = value;
+  },
+  SET_SEARCH_RESULTS(state, value) {
+    state.search.results = value;
   }
 };
 
@@ -125,6 +147,20 @@ const actions = {
       dispatch('getByCategory', currentCategory);
       dispatch('select', getDefaultSelectedState());
     });
+  },
+
+  search({ commit, state }) {
+    // commit('SET_SEARCH_QUERY', query);
+    commit('SET_SHOW_SEARCH', true);
+
+    return SnippetService.search(state.search.query).then(resp => {
+      commit('SET_SEARCH_RESULTS', resp.data);
+    });
+  },
+
+  clearSearch({ commit }) {
+    commit('SET_SEARCH_QUERY', null);
+    commit('SET_SHOW_SEARCH', false);
   }
 };
 

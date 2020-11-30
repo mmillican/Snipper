@@ -1,6 +1,10 @@
 import ApiService from './api';
 
 export default {
+  search(query) {
+    return ApiService.get(`snippets/search?query=${query}`);
+  },
+
   getByCategory(categorySlug) {
     return ApiService.get(`categories/${categorySlug}/snippets`);
   },

@@ -29,6 +29,12 @@ Resources:
           AttributeType: S
         - AttributeName: Id
           AttributeType: S
+        - AttributeName: Name
+          AttributeType: S
+        - AttributeName: FileName
+          AttributeType: S
+        - AttributeName: Content
+          AttributeType: S
       KeySchema:
         - AttributeName: Category
           KeyType: HASH
@@ -46,6 +52,23 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: 1 # TODO: make parms
+            WriteCapacityUnits: 1
+        - IndexName: SnippetSearch
+          KeySchema:
+            - AttributeName: Content
+              KeyType: HASH
+            - AttributeName: Id
+              KeyType: RANGE
+          Projection:
+            ProjectionType: INCLUDE
+            NonKeyAttributes:
+              - Category
+              - FileName
+              - Language
+              - SnippetId
+              - Name
           ProvisionedThroughput:
             ReadCapacityUnits: 1 # TODO: make parms
             WriteCapacityUnits: 1

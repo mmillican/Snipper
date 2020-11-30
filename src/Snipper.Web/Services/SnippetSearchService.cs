@@ -8,22 +8,22 @@ using Snipper.Web.Models;
 
 namespace Snipper.Web.Services
 {
-    public class SnippetService : DynamoDbService<SnippetFileRecord>
+    public class SnippetSearchService : DynamoDbService<SnippetSearchModel>
     {
-        public SnippetService(IOptions<DynamoConfig> dynamoOptions)
+        public SnippetSearchService(IOptions<DynamoConfig> dynamoOptions)
         {
             var config = dynamoOptions.Value;
             Init(config.SnippetTableName);
         }
 
-        public Task<IEnumerable<SnippetFileRecord>> GetByCategory(string slug)
+        public Task<IEnumerable<SnippetSearchModel>> Search(string query)
         {
             var conditions = new List<ScanCondition>
             {
-                new ScanCondition("Category", ScanOperator.Equal, slug)
+                new ScanCondition("Content", ScanOperator.Contains, query)
             };
 
-            return QueryAsync(conditions, "SnippetCategory");
+            return QueryAsync(conditions, "SnippetSearch");
         }
     }
 }

@@ -61,6 +61,7 @@ namespace Snipper.Web
 
             services.AddTransient<CategoryService>();
             services.AddTransient<SnippetService>();
+            services.AddTransient<SnippetSearchService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

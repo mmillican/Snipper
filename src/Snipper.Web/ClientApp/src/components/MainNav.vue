@@ -17,13 +17,25 @@
 
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
-          <b-nav-item to="/login" v-if="!isAuthenticated">Sign in</b-nav-item>
-          <b-nav-item-dropdown right v-if="isAuthenticated">
-            <!-- Using 'button-content' slot -->
-            <template slot="button-content">{{ currentUser ? currentUser.firstName : '' }}</template>
-            <b-dropdown-item to="/user/profile">Profile</b-dropdown-item>
-            <b-dropdown-item href="#" v-on:click="logout">Sign Out</b-dropdown-item>
-          </b-nav-item-dropdown>
+          <form
+            @submit.prevent="searchSnippets"
+            class="form-inline"
+          >
+            <input
+              type="search"
+              v-model="searchQuery"
+              class="form-control mr-sm-2"
+              placeholder="Search..."
+              aria-label="Search"
+            />
+
+            <button
+              type="submit"
+              class="btn btn-outline-success my-2 my-sm-0 sr-only"
+            >
+              Search
+            </button>
+          </form>
         </b-navbar-nav>
       </b-collapse>
     </div>
@@ -31,11 +43,19 @@
 </template>
 
 <script lang="ts">
+import { mapActions } from 'vuex';
+import { mapFields } from 'vuex-map-fields';
+
 export default {
   data() {
     return {
       isAuthenticated: false
     };
+  },
+  computed: {
+    ...mapFields('snippets', {
+      searchQuery: 'search.query'
+    })
   },
   // created() {
   //   this.authenticate();
@@ -49,6 +69,13 @@ export default {
   //   $route: 'authenticate'
   // },
   methods: {
+    ...mapActions('snippets', [
+      'search'
+    ]),
+    searchSnippets() {
+      console.log('search');
+      this.search()
+    }
     // async authenticate() {
     //   this.isAuthenticated = await this.$auth.isAuthenticated();
     // },
