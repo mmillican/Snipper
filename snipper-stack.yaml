@@ -1,11 +1,78 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: The stack for Snipper, code snippet manager
 
-# Parameters:
-#   ApiLogRetentionDays:
-#     Type: Number
-#     Description: The number of days to keep CloudWatch logs for the APIs
-#     Default: 14
+Parameters:
+  EcsParentStackName:
+    Type: String
+    Description: The name of the ECS parent stack for looking up resources
+
+  ServiceName:
+    Type: String
+    Description: The name of this service
+
+  ImageUrl:
+    Type: String
+    Description: The URL of the docker image
+
+  ContainerPort:
+    Type: Number
+    Description: The port to expose on the container
+    Default: 80
+
+  ContainerCpu:
+    Type: Number
+    Description: How much CPU to give the container. 1024 is 1 CPU
+    Default: 512
+
+  ContainerMemory:
+    Type: Number
+    Description: How much memory to give the container (in MB)
+    Default: 512
+
+  LoadBalancerPath:
+    Type: String
+    Description: The path on the load balancer to route traffic from. '*' will route all traffic
+    Default: '*'
+
+  DesiredCount:
+    Type: Number
+    Description: Number of copies to run of this container
+    Default: 1
+
+  DnsHostedZoneId:
+    Type: String
+    Description: The Route53 hosted zone ID to create the DNS record for
+    Default: ''
+
+  CustomDomainPrefix:
+    Type: String
+    Description: If provided, becomes the sub-domain under the hosted zone. If not provided, the stack slug is used
+    Default: ''
+
+  DomainSuffix:
+    Type: String
+    Description: The DNS suffix for the DNS name. Required if specifying a Hosted Zone ID
+    Default: ''
+
+  ACMCertificateArn:
+    Type: String
+    Description: The ARN of the ACM certificate to use for the load balancer
+    Default: ''
+
+  ELBListenerRulePriorityHttp:
+    Type: Number
+    Description: Rule Priority for HTTP listener
+
+  ELBListenerRulePriorityHttps:
+    Type: Number
+    Description: Rule Priority for HTTPS listener
+
+Conditions:
+  DeployToEcs: !Not [ !Equals [ !Ref EcsParentStackName, '' ] ]
+
+  HasHostedZoneId: !Not [ !Equals [ !Ref DnsHostedZoneId, '' ] ]
+  HasACMCertificateArn: !Not [ !Equals [ !Ref ACMCertificateArn, '' ] ]
+  HasCustomDomainPrefix: !Not [ !Equals [ !Ref CustomDomainPrefix, '' ] ]
 
 Resources:
   CategoryTable:
@@ -73,6 +140,177 @@ Resources:
           - id: W74
             reason: Encryption is not needed
 
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/snipper/${AWS::StackName}
+      RetentionInDays: 7
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Condition: DeployToEcs
+    Properties:
+      Family: !Ref ServiceName
+      Cpu: !Ref ContainerCpu
+      Memory: !Ref ContainerMemory
+      TaskRoleArn: !Ref TaskRole
+      ContainerDefinitions:
+        - Name: !Ref ServiceName
+          Cpu: !Ref ContainerCpu
+          Memory: !Ref ContainerMemory
+          Image: !Ref ImageUrl
+          PortMappings:
+            - ContainerPort: 80
+          Environment:
+            - Name: ASPNETCORE_ENVIRONMENT
+              Value: Production
+            - Name: AWS__Region
+              Value: !Ref 'AWS::Region'
+            - Name: 'DynamoDb__SnippetTableName'
+              Value: !Ref SnippetFileTable
+            - Name: 'DynamoDb__CategoryTableName'
+              Value: !Ref CategoryTable
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+
+  TaskRole:
+    Type: AWS::IAM::Role
+    Condition: DeployToEcs
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: DynamoDb
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                  - dynamodb:BatchGet*
+                  - dynamodb:Get*
+                  - dynamodb:PutItem
+                  - dynamodb:Update*
+                  - dynamodb:Scan
+                Resource:
+                  - !GetAtt CategoryTable.Arn
+                  - !GetAtt SnippetFileTable.Arn
+
+  Service:
+    Type: AWS::ECS::Service
+    Condition: DeployToEcs
+    Properties:
+      Cluster:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'ClusterName']]
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 75
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref TaskDefinition
+      LoadBalancers:
+        - ContainerName: !Ref ServiceName
+          ContainerPort: !Ref ContainerPort
+          TargetGroupArn: !Ref TargetGroupHttp
+
+  TargetGroupHttp:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /swagger/v1/swagger.json
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'VpcId']]
+
+  TargetGroupHttps:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 6
+      HealthCheckPath: /swagger/v1/swagger.json
+      HealthCheckProtocol: HTTPS
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 2
+      Port: 443
+      Protocol: HTTPS
+      UnhealthyThresholdCount: 2
+      VpcId:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'VpcId']]
+
+  Route53Record:
+    Type: AWS::Route53::RecordSetGroup
+    Condition: HasHostedZoneId
+    Properties:
+      HostedZoneId: !Ref DnsHostedZoneId
+      RecordSets:
+        - Name: !If
+            - HasCustomDomainPrefix
+            - !Sub ${CustomDomainPrefix}.${DomainSuffix}.
+            - !Sub ${AWS::StackName}.${DomainSuffix}.
+          Type: A
+          AliasTarget:
+            HostedZoneId:
+              Fn::ImportValue:
+                !Join [':', [!Ref 'EcsParentStackName', 'LoadBalancerHostedZoneId'] ]
+            DNSName:
+              Fn::ImportValue:
+                !Join [':', [!Ref 'EcsParentStackName', 'LoadBalancerDNSName'] ]
+
+  LoadBalancerHttpRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref TargetGroupHttp
+          Type: 'forward'
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Sub ${CustomDomainPrefix}.${DomainSuffix}
+      ListenerArn:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'LoadBalancerListenerHttpArn']]
+      Priority: !Ref ELBListenerRulePriorityHttp
+
+  LoadBalancerHttpsRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn: !Ref TargetGroupHttp
+          Type: 'forward'
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - !Sub ${CustomDomainPrefix}.${DomainSuffix}
+      ListenerArn:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'LoadBalancerListenerHttpsArn']]
+      Priority: !Ref ELBListenerRulePriorityHttps
+
+  LoadBalancerHttpsListenerCertificate:
+    Type: AWS::ElasticLoadBalancingV2::ListenerCertificate
+    Condition: HasACMCertificateArn
+    Properties:
+      ListenerArn:
+        Fn::ImportValue:
+          !Join [':', [!Ref 'EcsParentStackName', 'LoadBalancerListenerHttpsArn']]
+      Certificates:
+        - CertificateArn: !Ref ACMCertificateArn
 
 Outputs:
   CategoryTableName:
