@@ -11,19 +11,23 @@ Resources:
   CategoryTable:
     Type: AWS::DynamoDB::Table
     Properties:
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: Slug
           AttributeType: S
       KeySchema:
         - AttributeName: Slug
           KeyType: HASH
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1 # TODO: make parms
-        WriteCapacityUnits: 1
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W74
+            reason: Encryption is not needed
 
   SnippetFileTable:
     Type: 'AWS::DynamoDB::Table'
     Properties:
+      BillingMode: PAY_PER_REQUEST
       AttributeDefinitions:
         - AttributeName: Category
           AttributeType: S
@@ -40,9 +44,6 @@ Resources:
           KeyType: HASH
         - AttributeName: Id
           KeyType: RANGE
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1 # TODO: make parms
-        WriteCapacityUnits: 1
       GlobalSecondaryIndexes:
         - IndexName: SnippetCategory
           KeySchema:
@@ -52,9 +53,6 @@ Resources:
               KeyType: RANGE
           Projection:
             ProjectionType: ALL
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1 # TODO: make parms
-            WriteCapacityUnits: 1
         - IndexName: SnippetSearch
           KeySchema:
             - AttributeName: Content
@@ -69,9 +67,12 @@ Resources:
               - Language
               - SnippetId
               - Name
-          ProvisionedThroughput:
-            ReadCapacityUnits: 1 # TODO: make parms
-            WriteCapacityUnits: 1
+    Metadata:
+      cfn_nag:
+        rules_to_suppress:
+          - id: W74
+            reason: Encryption is not needed
+
 
 Outputs:
   CategoryTableName:
