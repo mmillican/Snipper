@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.DocumentModel;
 using Microsoft.Extensions.Options;
@@ -10,10 +11,11 @@ namespace Snipper.Web.Services
 {
     public class SnippetService : DynamoDbService<SnippetFileRecord>
     {
-        public SnippetService(IOptions<DynamoConfig> dynamoOptions)
+        public SnippetService(IAmazonDynamoDB dynamoClient,
+            IOptions<DynamoConfig> dynamoOptions)
         {
             var config = dynamoOptions.Value;
-            Init(config.SnippetTableName);
+            Init(dynamoClient, config.SnippetTableName);
         }
 
         public Task<IEnumerable<SnippetFileRecord>> GetByCategory(string slug)

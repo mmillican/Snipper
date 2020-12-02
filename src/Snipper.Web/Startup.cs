@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Snipper.Web.Services;
 using Snipper.Web.Configuration;
+using Amazon.DynamoDBv2;
 
 namespace Snipper.Web
 {
@@ -56,6 +57,9 @@ namespace Snipper.Web
                 // var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 // options.IncludeXmlComments(xmlPath);
             });
+
+            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
+            services.AddAWSService<IAmazonDynamoDB>();
 
             services.Configure<DynamoConfig>(Configuration.GetSection("DynamoDb"));
 
