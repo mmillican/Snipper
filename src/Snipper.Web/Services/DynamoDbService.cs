@@ -75,10 +75,10 @@ namespace Snipper.Web.Services
             return page;
         }
 
-        public Task SaveAsync(TModel model)
+        public virtual Task SaveAsync(TModel model)
             => _ddbContext.SaveAsync(model);
 
-        public Task DeleteAsync(TModel model)
+        public virtual Task DeleteAsync(TModel model)
             => _ddbContext.DeleteAsync(model);
     }
 }

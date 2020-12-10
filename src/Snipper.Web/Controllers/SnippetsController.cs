@@ -14,16 +14,13 @@ namespace Snipper.Web.Controllers
     public class SnippetsController : ControllerBase
     {
         private readonly SnippetService _snippetService;
-        private readonly SnippetSearchService _searchService;
 
         private readonly ILogger<SnippetsController> _logger;
 
         public SnippetsController(SnippetService snippetService,
-            SnippetSearchService snippetSearchService,
             ILogger<SnippetsController> logger)
         {
             _snippetService = snippetService;
-            _searchService = snippetSearchService;
             _logger = logger;
         }
 
@@ -31,14 +28,6 @@ namespace Snipper.Web.Controllers
         public async Task<ActionResult<List<Snippet>>> GetSnippets()
         {
             var snippets = await _snippetService.QueryAsync();
-
-            return Ok(snippets);
-        }
-
-        [HttpGet("search")]
-        public async Task<ActionResult<List<SnippetSearchModel>>> Search(string query)
-        {
-            var snippets = await _searchService.Search(query);
 
             return Ok(snippets);
         }

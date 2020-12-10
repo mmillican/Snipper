@@ -2,7 +2,7 @@ import ApiService from './api';
 
 export default {
   search(query) {
-    return ApiService.get(`snippets/search?query=${query}`);
+    return ApiService.get(`search?query=${query}`);
   },
 
   getByCategory(categorySlug) {

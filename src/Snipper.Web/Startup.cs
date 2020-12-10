@@ -62,10 +62,14 @@ namespace Snipper.Web
             services.AddAWSService<IAmazonDynamoDB>();
 
             services.Configure<DynamoConfig>(Configuration.GetSection("DynamoDb"));
+            services.Configure<SearchConfig>(Configuration.GetSection("Search"));
 
             services.AddTransient<CategoryService>();
             services.AddTransient<SnippetService>();
             services.AddTransient<SnippetSearchService>();
+
+            services.AddElasticSearch(Configuration);
+            // services.AddTransient<IElasticService, ElasticService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
