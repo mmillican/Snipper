@@ -9,8 +9,6 @@
     <div class="col-md-8 px-0">
       <view-snippet />
     </div>
-
-    <search-container />
   </div>
 </template>
 
@@ -18,14 +16,12 @@
 import Categories from '@/components/Categories.vue';
 import Snippets from '@/components/snippets/SnippetList.vue';
 import ViewSnippet from '@/components/snippets/ViewSnippet.vue';
-import SearchContainer from '@/components/snippets/SearchContainer.vue';
 
 export default {
   components: {
     Categories,
     Snippets,
-    ViewSnippet,
-    SearchContainer
+    ViewSnippet
   }
 }
 </script>

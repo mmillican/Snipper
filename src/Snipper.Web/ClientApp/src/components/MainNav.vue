@@ -7,6 +7,7 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
+          <b-nav-item to="/search">Search</b-nav-item>
           <template v-if="isAuthenticated">
             <b-nav-item to="/albums/mine">My Albums</b-nav-item>
             <b-nav-item :to="{name: 'roadsList'}">Railroads</b-nav-item>
@@ -43,46 +44,17 @@
 </template>
 
 <script lang="ts">
-import { mapActions } from 'vuex';
-import { mapFields } from 'vuex-map-fields';
-
 export default {
   data() {
     return {
-      isAuthenticated: false
+      isAuthenticated: false,
+      searchQuery: null
     };
   },
-  computed: {
-    ...mapFields('snippets', {
-      searchQuery: 'search.query'
-    })
-  },
-  // created() {
-  //   this.authenticate();
-  // },
-  // computed: {
-  //   ...mapGetters([
-  //     'currentUser'
-  //   ])
-  // },
-  // watch: {
-  //   $route: 'authenticate'
-  // },
   methods: {
-    ...mapActions('snippets', [
-      'search'
-    ]),
     searchSnippets() {
-      console.log('search');
-      this.search()
+      this.$router.push({ name: 'search', query: { query: this.searchQuery } });
     }
-    // async authenticate() {
-    //   this.isAuthenticated = await this.$auth.isAuthenticated();
-    // },
-    // async logout() {
-    //   await this.$auth.logout();
-    //   await this.authenticate();
-    // }
   }
 };
 </script>

@@ -149,11 +149,11 @@ const actions = {
     });
   },
 
-  search({ commit, state }) {
-    // commit('SET_SEARCH_QUERY', query);
-    commit('SET_SHOW_SEARCH', true);
+  search({ commit }, query) {
+    commit('SET_SEARCH_QUERY', query);
+    // commit('SET_SHOW_SEARCH', true);
 
-    return SnippetService.search(state.search.query).then(resp => {
+    return SnippetService.search(query).then(resp => {
       commit('SET_SEARCH_RESULTS', resp.data);
     });
   },
