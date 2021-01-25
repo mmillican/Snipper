@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,21 +13,21 @@ namespace Snipper.Web.Controllers
     [Route("api/categories")]
     public class CategoriesController : ControllerBase
     {
-        private readonly CategoryService _categoryService;
+        private readonly ICategoryService _categoryService;
 
         private readonly ILogger<CategoriesController> _logger;
 
-        public CategoriesController(CategoryService Categorieservice,
+        public CategoriesController(ICategoryService categoryService,
             ILogger<CategoriesController> logger)
         {
-            _categoryService = Categorieservice;
+            _categoryService = categoryService;
             _logger = logger;
         }
 
         [HttpGet("")]
-        public async Task<ActionResult<List<Snippet>>> GetCategories()
+        public async Task<ActionResult<List<CategoryModel>>> GetCategories()
         {
-            var categories = await _categoryService.QueryAsync();
+            var categories = await _categoryService.GetAllAsync();
 
             categories = categories.OrderBy(x => x.Name);
 
@@ -34,9 +35,9 @@ namespace Snipper.Web.Controllers
         }
 
         [HttpGet("{slug}")]
-        public async Task<ActionResult<Snippet>> GetBySlug(string slug)
+        public async Task<ActionResult<CategoryModel>> GetBySlug(string slug)
         {
-            var snippet = await _categoryService.GetByIdAsync(slug);
+            var snippet = await _categoryService.GetBySlugAsync(slug);
             if (snippet == null)
             {
                 return NotFound();
@@ -46,29 +47,33 @@ namespace Snipper.Web.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<Snippet>> Create(Category model)
+        public async Task<ActionResult<CategoryModel>> Create(CategoryModel model)
         {
             model.Slug = model.Name.Slugify();
 
-            // TODO: Verify slug doesn't exist
-
-            await _categoryService.SaveAsync(model);
+            await _categoryService.CreateAsync(model);
 
             return CreatedAtAction(nameof(GetBySlug), new { slug = model.Slug }, model);
         }
 
         [HttpPut("{slug}")]
-        public async Task<ActionResult> Update(string slug, Category model)
+        public async Task<ActionResult> Update(string slug, CategoryModel model)
         {
-            var snippet = await _categoryService.GetByIdAsync(slug);
-            if (snippet == null)
+            model.Slug = slug; // Make sure the slug can't be changed
+
+            try
+            {
+                await _categoryService.UpdateAsync(model);
+            }
+            catch(KeyNotFoundException)
             {
                 return NotFound();
             }
-
-            model.Slug = slug; // Make sure the slug can't be changed
-
-            await _categoryService.SaveAsync(model);
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating category '{model.Slug}'");
+                return StatusCode(500);
+            }
 
             return NoContent();
         }

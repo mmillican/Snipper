@@ -6,7 +6,8 @@ using Snipper.Web.Models;
 
 namespace Snipper.Web.Services
 {
-    public class CategoryService : DynamoDbService<Category>
+
+    public class CategoryService : DynamoDbService<CategoryModel>
     {
         public CategoryService(IAmazonDynamoDB dynamoClient,
             IOptions<DynamoConfig> dynamoOptions)

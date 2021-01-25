@@ -12,10 +12,10 @@ namespace Snipper.Web.Controllers
     public class SearchController : ControllerBase
     {
         private readonly ISearchService _searchService;
-        private readonly SnippetService _snippetService;
+        private readonly ISnippetService _snippetService;
 
         public SearchController(ISearchService searchService,
-            SnippetService snippetService)
+            ISnippetService snippetService)
         {
             _searchService = searchService;
             _snippetService = snippetService;
@@ -29,29 +29,29 @@ namespace Snipper.Web.Controllers
             return Ok(snippets);
         }
 
-        [HttpGet("re-index")] // TODO: Make a POST
-        public async Task<ActionResult> ReIndex()
-        {
-            var allSnippets = await _snippetService.GetAllAsync();
+        // [HttpGet("re-index")] // TODO: Make a POST
+        // public async Task<ActionResult> ReIndex()
+        // {
+        //     var allSnippets = await _snippetService.GetAllAsync();
 
-            var searchModels = allSnippets.Select(snippet =>
-                new SnippetSearchModel
-                {
-                    Id = snippet.Id,
-                    Category = snippet.Category,
-                    SnippetId = snippet.SnippetId,
-                    Name = snippet.Name,
-                    Description = snippet.Description,
-                    FileName = snippet.FileName,
-                    Language = snippet.Language,
-                    Content = snippet.Content
-                })
-                .ToList();
+        //     var searchModels = allSnippets.Select(snippet =>
+        //         new SnippetSearchModel
+        //         {
+        //             Id = snippet.Id,
+        //             Category = snippet.Category,
+        //             SnippetId = snippet.SnippetId,
+        //             Name = snippet.Name,
+        //             Description = snippet.Description,
+        //             FileName = snippet.FileName,
+        //             Language = snippet.Language,
+        //             Content = snippet.Content
+        //         })
+        //         .ToList();
 
-            await _searchService.ReindexAsync(searchModels);
+        //     await _searchService.ReindexAsync(searchModels);
 
-            return Ok();
-        }
+        //     return Ok();
+        // }
 
     }
 }

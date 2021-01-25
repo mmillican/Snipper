@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -13,6 +7,11 @@ using Microsoft.OpenApi.Models;
 using Snipper.Web.Services;
 using Snipper.Web.Configuration;
 using Amazon.DynamoDBv2;
+using Snipper.Data;
+using Microsoft.EntityFrameworkCore;
+using AutoMapper;
+using Snipper.Web.Models;
+using Snipper.Web.Services.Implmentations.EntityFramework;
 
 namespace Snipper.Web
 {
@@ -28,7 +27,38 @@ namespace Snipper.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var dataProvider = Configuration["DataProvider"];
+
             services.AddControllersWithViews();
+
+            if (Configuration.IsSqlServerDataProvider())
+            {
+                services.AddDbContext<SnipperDbContext>(options =>
+                    options.UseSqlServer(
+                        Configuration.GetConnectionString("DefaultConnection")
+                    )
+                );
+
+                services.AddTransient<ICategoryService, EfCategoryService>();
+                services.AddTransient<ISnippetService, EfSnippetService>();
+                services.AddTransient<ISearchService, EfSearchService>();
+            }
+            else // dynamo db + elasticsearch
+            {
+                services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
+                services.AddAWSService<IAmazonDynamoDB>();
+
+                services.Configure<DynamoConfig>(Configuration.GetSection("DynamoDb"));
+                services.Configure<SearchConfig>(Configuration.GetSection("Search"));
+
+                services.AddTransient<CategoryService>();
+                services.AddTransient<SnippetService>();
+                services.AddTransient<SnippetSearchService>();
+
+                services.AddElasticSearch(Configuration);
+            }
+
+            services.AddAutoMapper(typeof(MappingProfile));
 
             services.AddCors(options =>
             {
@@ -58,18 +88,6 @@ namespace Snipper.Web
                 // options.IncludeXmlComments(xmlPath);
             });
 
-            services.AddDefaultAWSOptions(Configuration.GetAWSOptions());
-            services.AddAWSService<IAmazonDynamoDB>();
-
-            services.Configure<DynamoConfig>(Configuration.GetSection("DynamoDb"));
-            services.Configure<SearchConfig>(Configuration.GetSection("Search"));
-
-            services.AddTransient<CategoryService>();
-            services.AddTransient<SnippetService>();
-            services.AddTransient<SnippetSearchService>();
-
-            services.AddElasticSearch(Configuration);
-            // services.AddTransient<IElasticService, ElasticService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -123,7 +141,7 @@ namespace Snipper.Web
 
                 if (env.IsDevelopment())
                 {
-                    spa.UseProxyToSpaDevelopmentServer("http://localhost:8080");
+                    spa.UseProxyToSpaDevelopmentServer("http://localhost:8081");
                 }
             });
         }

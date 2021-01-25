@@ -7,13 +7,6 @@ using Snipper.Web.Models;
 
 namespace Snipper.Web.Services
 {
-    public interface ISearchService
-    {
-        Task<IEnumerable<SnippetSearchModel>> SearchAsync(string query);
-        Task SaveSnippetAsync(SnippetSearchModel model);
-        Task ReindexAsync(List<SnippetSearchModel> searchModels);
-    }
-
     public class SearchService : ISearchService
     {
         private readonly ElasticClient _elasticClient;

@@ -13,66 +13,35 @@ namespace Snipper.Web.Controllers
     [Route("api/snippets")]
     public class SnippetsController : ControllerBase
     {
-        private readonly SnippetService _snippetService;
+        private readonly ISnippetService _snippetService;
 
         private readonly ILogger<SnippetsController> _logger;
 
-        public SnippetsController(SnippetService snippetService,
+        public SnippetsController(ISnippetService snippetService,
             ILogger<SnippetsController> logger)
         {
             _snippetService = snippetService;
             _logger = logger;
         }
 
-        [HttpGet("")]
-        public async Task<ActionResult<List<Snippet>>> GetSnippets()
-        {
-            var snippets = await _snippetService.QueryAsync();
+        // [HttpGet("")]
+        // public async Task<ActionResult<List<SnippetModel>>> GetSnippets()
+        // {
+        //     var snippets = await _snippetService.
 
-            return Ok(snippets);
-        }
+        //     return Ok(snippets);
+        // }
 
         [HttpGet("/api/categories/{slug}/snippets")]
-        public async Task<ActionResult<Snippet>> GetByCategory(string slug)
+        public async Task<ActionResult<SnippetModel>> GetByCategory(string slug)
         {
-            var snippetRecords = await _snippetService.GetByCategory(slug);
-
-            var snippetGroups = snippetRecords.GroupBy(x => x.SnippetId);
-
-            var snippets = new List<Snippet>();
-
-            foreach(var grp in snippetGroups)
-            {
-                var snippetGrpRecord = snippetRecords
-                    .FirstOrDefault(x => x.SnippetId == grp.Key);
-
-                var snip = new Snippet
-                {
-                    Id = snippetGrpRecord.SnippetId,
-                    Category = snippetGrpRecord.Category,
-                    Name = snippetGrpRecord.Name,
-                    Description = snippetGrpRecord.Description,
-                    CreatedOn = snippetGrpRecord.CreatedOn,
-                    UpdatedOn = snippetGrpRecord.UpdatedOn
-                };
-
-                snip.Files = grp.Select(x => new SnippetFile
-                {
-                    Id = x.Id,
-                    Order = x.Order,
-                    FileName = x.FileName,
-                    Language = x.Language,
-                    Content = x.Content
-                }).ToList();
-
-                snippets.Add(snip);
-            }
-
+            var snippets = await _snippetService.GetByCategorySlugAsync(slug);
+            // TODO: May need to transform the data a bit
             return Ok(snippets);
         }
 
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<Snippet>> GetById(string id)
+        public async Task<ActionResult<SnippetModel>> GetById(Guid id)
         {
             var snippet = await _snippetService.GetByIdAsync(id);
             if (snippet == null)
@@ -84,60 +53,74 @@ namespace Snipper.Web.Controllers
         }
 
         [HttpPost("")]
-        public async Task<ActionResult<Snippet>> Create(Snippet model)
+        public async Task<ActionResult<SnippetModel>> Create(SnippetModel model)
         {
-            model.Id = Guid.NewGuid();
-            await SaveSnippet(model);
+            try
+            {
+                var result = await _snippetService.CreateAsync(model);
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, "Error creating new snippet");
+                return StatusCode(500);
+            }
 
             return CreatedAtAction(nameof(GetById), new { id = model.Id }, model);
         }
 
         [HttpPut("{id:guid}")]
-        public async Task<ActionResult> Update(Guid id, Snippet model)
+        public async Task<ActionResult> Update(Guid id, SnippetModel model)
         {
-            model.Id = id;
-            await SaveSnippet(model);
-
-            return NoContent();
-        }
-
-        private async Task SaveSnippet(Snippet model)
-        {
-            foreach (var file in model.Files)
+            try
             {
-                var record = new SnippetFileRecord
-                {
-                    Category = model.Category,
-                    SnippetId = model.Id,
-                    Name = model.Name,
-                    Description = model.Description,
-                    CreatedOn = model.CreatedOn ?? DateTime.UtcNow,
-                    UpdatedOn = DateTime.UtcNow,
+                await _snippetService.UpdateAsync(model);
 
-                    Id = file.Id == Guid.Empty ? Guid.NewGuid() : file.Id,
-                    Order = file.Order,
-                    Language = file.Language,
-                    FileName = file.FileName,
-                    Content = file.Content
-                };
-
-                await _snippetService.SaveAsync(record);
+                return NoContent();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError(ex, $"Error updating snippet {id}");
+                return StatusCode(500);
             }
         }
 
-        [HttpDelete("{id:guid}")]
-        public async Task<ActionResult> Delete(string id)
-        {
-            var snippet = await _snippetService.GetByIdAsync(id);
-            if (snippet == null)
-            {
-                return NotFound();
-            }
+    //     private async Task SaveSnippet(SnippetModel model)
+    //     {
+    //         foreach (var file in model.Files)
+    //         {
+    //             var record = new SnippetFileRecord
+    //             {
+    //                 Category = model.Category,
+    //                 SnippetId = model.Id,
+    //                 Name = model.Name,
+    //                 Description = model.Description,
+    //                 CreatedOn = model.CreatedOn ?? DateTime.UtcNow,
+    //                 UpdatedOn = DateTime.UtcNow,
 
-            await _snippetService.DeleteAsync(snippet);
+    //                 Id = file.Id == Guid.Empty ? Guid.NewGuid() : file.Id,
+    //                 Order = file.Order,
+    //                 Language = file.Language,
+    //                 FileName = file.FileName,
+    //                 Content = file.Content
+    //             };
 
-            return NoContent();
-        }
+    //             await _snippetService.SaveAsync(record);
+    //         }
+    //     }
+
+    //     [HttpDelete("{id:guid}")]
+    //     public async Task<ActionResult> Delete(string id)
+    //     {
+    //         var snippet = await _snippetService.GetByIdAsync(id);
+    //         if (snippet == null)
+    //         {
+    //             return NotFound();
+    //         }
+
+    //         await _snippetService.DeleteAsync(snippet);
+
+    //         return NoContent();
+    //     }
     }
 
     public class CreateSnippetModel

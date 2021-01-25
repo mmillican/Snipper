@@ -3,9 +3,9 @@ using System.Collections.Generic;
 
 namespace Snipper.Web.Models
 {
-    public class Snippet
+    public class SnippetModel
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
 
         public string Category { get; set; }
         public string Language { get; set; }
@@ -15,13 +15,13 @@ namespace Snipper.Web.Models
 
         public string UserName { get; set; }
 
-        public List<SnippetFile> Files { get; set; } = new List<SnippetFile>();
+        public List<SnippetFileModel> Files { get; set; } = new List<SnippetFileModel>();
 
         public DateTime? CreatedOn { get; set; }
         public DateTime? UpdatedOn { get; set; }
     }
 
-    public class SnippetFile
+    public class SnippetFileModel
     {
         public Guid Id { get; set; }
 
