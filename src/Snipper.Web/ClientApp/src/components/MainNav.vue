@@ -7,13 +7,7 @@
 
       <b-collapse id="nav-collapse" is-nav>
         <b-navbar-nav>
-          <b-nav-item to="/search">Search</b-nav-item>
-          <template v-if="isAuthenticated">
-            <b-nav-item to="/albums/mine">My Albums</b-nav-item>
-            <b-nav-item :to="{name: 'roadsList'}">Railroads</b-nav-item>
-            <b-nav-item :to="{name: 'locomotiveList'}">Locomotives</b-nav-item>
-            <b-nav-item :to="{name: 'userList'}">Users</b-nav-item>
-          </template>
+          <!-- <b-nav-item to="/search">Search</b-nav-item> -->
         </b-navbar-nav>
 
         <!-- Right aligned nav items -->
