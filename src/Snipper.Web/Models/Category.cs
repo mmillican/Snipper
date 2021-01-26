@@ -4,7 +4,7 @@ namespace Snipper.Web.Models
 {
     public class CategoryModel
     {
-        [Required, MaxLength(50)]
+        [MaxLength(50)]
         public string Slug { get; set; }
         [Required, MaxLength(50)]
         public string Name { get; set; }
