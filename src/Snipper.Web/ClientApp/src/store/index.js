@@ -1,9 +1,10 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import Vue from 'vue';
+import Vuex from 'vuex';
 import CategoriesModule from './modules/categories';
 import SnippetsModule from './modules/snippets';
+import { createToastModule } from './modules/toasts';
 
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
@@ -14,6 +15,7 @@ export default new Vuex.Store({
   },
   modules: {
     categories: CategoriesModule,
-    snippets: SnippetsModule
+    snippets: SnippetsModule,
+    toasts: createToastModule()
   }
 });

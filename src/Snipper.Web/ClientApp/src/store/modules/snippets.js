@@ -1,6 +1,16 @@
 import { getField, updateField } from 'vuex-map-fields';
 import SnippetService from '@/services/snippets';
-import utils from '../../utils';
+import utils, { addErrorToast, addSuccessToast } from '../../utils';
+
+const getBlankSnippetFile = () => {
+  return {
+    id: utils.emptyGuid,
+    order: 1,
+    language: null,
+    fileName: null,
+    content: null
+  };
+};
 
 const getDefaultSelectedState = () => {
   return {
@@ -11,7 +21,9 @@ const getDefaultSelectedState = () => {
     name: null,
     description: null,
     userName: null,
-    files: [],
+    files: [
+      getBlankSnippetFile()
+    ],
     createdOn: null,
     updatedOn: null
   };
@@ -23,7 +35,7 @@ const getDefaultSearchState = () => {
     query: null,
 
     results: []
-  }
+  };
 };
 
 const state = {
@@ -120,10 +132,18 @@ const actions = {
       return SnippetService.create(state.selected).then(() => {
         dispatch('getByCategory', state.selected.category);
         dispatch('closeEdit');
+
+        addSuccessToast('The snippet has been created.');
+      }).catch(_ => {
+        addErrorToast('There was an error creating the snippet. Try again.');
       });
     } else {
       return SnippetService.update(state.selected).then(() => {
         dispatch('closeEdit');
+
+        addSuccessToast('The snippet has been updated.');
+      }).catch(_ => {
+        addErrorToast('There was an error updating the snippet. Try again.');
       });
     }
   },
@@ -146,6 +166,10 @@ const actions = {
     return SnippetService.delete(state.selected).then(() => {
       dispatch('getByCategory', currentCategory);
       dispatch('select', getDefaultSelectedState());
+
+      addSuccessToast('The snippet has been deleted.');
+    }).catch(_ => {
+      addErrorToast('There was an error deleting the snippet. Try again.');
     });
   },
 

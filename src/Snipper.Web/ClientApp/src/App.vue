@@ -4,6 +4,8 @@
 
     <div class="container-fluid">
       <router-view/>
+
+      <toasts />
     </div>
 
   </div>
@@ -11,10 +13,12 @@
 
 <script>
 import MainNav from '@/components/MainNav.vue';
+import Toasts from './components/Toasts.vue';
 
 export default {
   components: {
-    MainNav
+    MainNav,
+    Toasts
   }
 }
 </script>

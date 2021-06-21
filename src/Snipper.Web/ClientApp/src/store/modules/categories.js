@@ -1,18 +1,19 @@
 import { getField, updateField } from 'vuex-map-fields';
 import CategoryService from '@/services/categories';
+import { addErrorToast, addSuccessToast } from '@/utils';
 
 const getDefaultSelectedState = () => {
   return {
     slug: null,
     name: null
-  }
+  };
 };
 
 const getDefaultEditingState = () => {
   return {
     isEditing: false,
     ...getDefaultSelectedState()
-  }
+  };
 };
 
 const state = {
@@ -91,14 +92,20 @@ const actions = {
       return CategoryService.create(state.editing).then(response => {
         dispatch('closeEdit');
         dispatch('getAll');
+
+        addSuccessToast('The category has been created.');
+      }).catch(_ => {
+        addErrorToast('There was an error creating the category. Try again.');
       });
-      // TODO: Catch error
     } else {
       return CategoryService.update(state.editing).then(response => {
         dispatch('closeEdit');
         dispatch('getAll');
+
+        addSuccessToast('The category has been updated.');
+      }).catch(_ => {
+        addErrorToast('There was an error updating the category. Try again.');
       });
-      // TODO: Catch error
     }
   }
 };
