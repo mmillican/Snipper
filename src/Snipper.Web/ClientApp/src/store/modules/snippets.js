@@ -110,6 +110,10 @@ const actions = {
     commit('SET_SELECTED', snippet);
   },
 
+  clearSelectedSnippet({ commit }) {
+    commit('SET_SELECTED', getDefaultSelectedState());
+  },
+
   addNew({ commit }) {
     commit('SET_IS_EDITING', true);
     commit('SET_SELECTED', getDefaultSelectedState());

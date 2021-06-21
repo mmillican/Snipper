@@ -67,6 +67,8 @@ export default {
     $route(val) {
       const slug = val.params.categorySlug;
       this.select(slug);
+
+      this.clearSelectedSnippet();
     }
   },
 
@@ -82,6 +84,9 @@ export default {
       'select',
       'showEdit',
       'save'
+    ]),
+    ...mapActions('snippets', [
+      'clearSelectedSnippet'
     ])
   }
 };
