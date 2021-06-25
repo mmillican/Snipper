@@ -40,16 +40,6 @@
 
         <hr />
 
-        <div class="actions my-2">
-          <b-button
-            type="button"
-            variant="outline-success"
-            @click="addFile"
-          >
-            Add File
-          </b-button>
-        </div>
-
         <edit-snippet-file
           v-for="file in files"
           :key="file.order"
@@ -63,17 +53,28 @@
           There are no files in this snippet.
         </b-alert>
 
-        <div class="actions my-2">
-          <b-button
-            type="submit"
-            variant="primary"
-          >Save Snippet</b-button>
+        <div class="actions my-2 d-flex justify-content-between">
+            <b-button
+              type="button"
+              variant="outline-secondary"
+              size="sm"
+              @click="addFile"
+            >
+              Add Another File
+            </b-button>
 
-          <b-button
-            type="button"
-            variant="link"
-            @click="cancelEdit"
-          >Cancel</b-button>
+          <div class="">
+            <b-button
+              type="submit"
+              variant="primary"
+            >Save</b-button>
+
+            <b-button
+              type="button"
+              variant="link"
+              @click="cancelEdit"
+            >Cancel</b-button>
+          </div>
         </div>
       </b-form>
     </div>

@@ -11,7 +11,7 @@
           <b-form-input
             id="file-name"
             v-model="file.fileName"
-            placeholder="filename.txt"
+            placeholder="filename or description"
             @change="fileNameChanged"
           />
           <b-input-group-append>
