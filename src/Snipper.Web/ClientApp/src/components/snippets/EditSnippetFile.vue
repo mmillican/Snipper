@@ -13,6 +13,7 @@
             v-model="file.fileName"
             placeholder="filename or description"
             @change="fileNameChanged"
+            required
           />
           <b-input-group-append>
             <b-button

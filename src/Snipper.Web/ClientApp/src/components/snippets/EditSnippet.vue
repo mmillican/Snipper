@@ -19,6 +19,7 @@
             :options="categories"
             value-field="slug"
             text-field="name"
+            required
           />
         </b-form-group>
 
@@ -27,7 +28,7 @@
           label="Name"
           label-cols-md="2"
         >
-          <b-form-input id="snippet-name" v-model="name" />
+          <b-form-input id="snippet-name" v-model="name" required />
         </b-form-group>
 
         <b-form-group
