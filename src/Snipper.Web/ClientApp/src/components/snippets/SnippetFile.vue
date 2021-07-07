@@ -27,7 +27,7 @@
     </div>
 
     <div class="card-body">
-      <vue-code-highlight :language="file.language">
+      <vue-code-highlight v-if="file && file.content" :language="'sql'">
         <pre>{{ file.content }}</pre>
       </vue-code-highlight>
     </div>
@@ -49,3 +49,9 @@ export default {
   }
 }
 </script>
+
+<style>
+:not(pre) > code[class*="language-"], pre[class*="language-"] {
+  background: none !important;
+}
+</style>
