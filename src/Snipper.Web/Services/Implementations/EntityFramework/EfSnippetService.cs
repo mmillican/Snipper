@@ -39,6 +39,7 @@ namespace Snipper.Web.Services.Implmentations.EntityFramework
             var snippets = await _dbContext.Snippets
                 .Include(x => x.Category)
                 .Where(x => x.Category.Slug == slug)
+                .OrderBy(x => x.Name)
                 .ProjectTo<SnippetModel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
 
